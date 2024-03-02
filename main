@@ -1,0 +1,233 @@
+import check
+
+class Card:
+  ''' 
+  Fields: 
+     value(Str), 
+     suit(Str)
+     
+  Requires:  
+     value in ['6', '7', '8', '9', '10', 'unter', 'ober', 'konig', 'ace']
+     suit in ['acorn', 'bell', 'heart', 'leaf']  
+  '''
+  def __init__(self, v, s):
+    '''
+    Initializes self so that value is v and suit is s
+    
+    Effects: Mutates self
+    
+    __init__: Card Str Str -> None
+    '''
+    self.value = v
+    self.suit = s
+    
+  def __repr__(self):
+    '''
+    Returns a string representation of self
+    
+    __repr__: Card -> Str
+    '''
+    ##Deal with 'leaf' plural being 'leaves'.
+    new_suit = self.suit
+    if new_suit == 'leaf':
+      new_suit = 'leave'
+    return "{0} of {1}s".format(self.value, new_suit)
+  
+  def __eq__(self, other):
+    '''
+    Returns True if self and other are equal Card
+    
+    __eq__: Card Any -> Bool
+    '''
+    return isinstance(other, Card) and\
+          self.value == other.value and\
+          self.suit == other.suit
+
+def hands(filename_in):
+  '''
+  consumes a string [filename_in] corresponding to a valid file and returns the
+  hands of each player in a game as a dictionary of type 
+  (dictof Str (listof Card))
+  
+  Effects:
+    Reads file called filename_in
+  
+  hands: Str -> (dictof Str (listof Card))
+  Requires:
+    filename_in exists
+    No player has the same card.
+    The words in card_value and card_suit are single space separated.
+    All lines including the last end with a newline character.
+    Every player has at least one card and that there is at 
+    least one player.
+    All player names are spelled using letters of the 
+    Latin alphabet and possibly spaces.
+    Players may have hands of different sizes.
+    
+  Examples:
+  hands("example.txt") => {"Jon": [Card("ace", "heart")] , 
+                           "Jona":[Card("konig", "acorn")]}
+    assuming example.txt is a file contains the following
+    Player: Jon
+    ace heart
+    Player: Jona
+    konig acorn
+  '''
+  dict = {}    
+   
+  fin = open(filename_in, 'r')
+  next_str = fin.readline()
+  player_name = ""
+ 
+  while (next_str != ""):  
+    line = []
+    line = next_str.split()    
+    if (len(line) > 0):
+      if (line[0] == "Player:"):
+        name_line = next_str.split(":")
+        player_name = name_line[1].strip()        
+        dict[player_name] = []
+      else:
+        new_card = Card(str(line[0]), str(line[1]))
+        dict[player_name].append(new_card)            
+   
+    next_str = fin.readline()
+   
+  fin.close()  
+  return dict                             
+  
+
+
+##Examples:
+##example.txt contains
+##Player: Jon
+##ace heart
+##Player: Jona
+##konig acorn
+check.expect("Example", hands("example.txt"),
+             {"Jon": [Card("ace", "heart")],
+              "Jona": [Card("konig", "acorn")]})
+
+##a10q01_my_file.txt contains
+##Player: Antonio
+##konig bell
+##Player: Barret
+##ace acorn
+check.expect("MarkUs Basic Test", hands("a10q01_my_file.txt"),
+             {"Antonio": [Card("konig", "bell")],
+              "Barret": [Card("ace", "acorn")]})
+              
+##Tests:
+##a10q01_empty.txt contains an empty file
+check.expect("Empty Test", hands("a10q01_empty.txt"), {})
+
+##a10q01_my_file1.txt contains
+##Player: J
+##6 acorn
+##6 bell
+##6 heart
+##6 leaf
+##Player: Jo
+##7 acorn
+##7 bell
+##7 heart
+##7 leaf
+##Player: Jon
+##8 acorn
+##8 bell
+##8 heart
+##8 leaf
+##Player: Jona
+##9 acorn
+##9 bell
+##9 heart
+##9 leaf
+##Player: Jonat
+##10 acorn
+##10 bell
+##10 heart
+##10 leaf
+##Player: Jonath
+##unter acorn
+##unter bell
+##unter heart
+#unter leaf
+##Player: Jonatha
+##ober acorn
+##ober bell
+##ober heart
+##ober leaf
+##Player: Jonathan
+##konig acorn
+##konig bell
+##konig heart
+##konig leaf
+##Player: Jonathann
+##ace acorn
+##ace bell
+##ace heart
+##ace leaf
+check.expect("All Cards test", hands("a10q01_my_file1.txt"),
+             {'J': [Card("6", "acorn"), Card("6", "bell"), Card("6", "heart"), 
+                    Card("6", "leaf")], 
+             'Jo': [Card("7", "acorn"), Card("7", "bell"), Card("7", "heart"), 
+                    Card("7", "leaf")], 
+             'Jon': [Card("8", "acorn"), Card("8", "bell"), Card("8", "heart"), 
+             Card("8", "leaf")], 
+             'Jona': [Card("9", "acorn"), Card("9", "bell"), Card("9", "heart"), 
+             Card("9", "leaf")], 
+             'Jonat': [Card("10", "acorn"), Card("10", "bell"), 
+                       Card("10", "heart"), Card("10", "leaf")], 
+             'Jonath': [Card("unter", "acorn"), Card("unter", "bell"),
+             Card("unter", "heart"), Card("unter", "leaf")], 
+             'Jonatha': [Card("ober", "acorn"), Card("ober", "bell"), 
+             Card("ober", "heart"), Card("ober", "leaf")], 
+             'Jonathan': [Card("konig", "acorn"), Card("konig", "bell"), 
+             Card("konig","heart"), Card("konig", "leaf")], 
+             'Jonathann': [Card("ace", "acorn"), Card("ace", "bell"), 
+             Card("ace", "heart"), Card("ace", "leaf")]})
+
+##a10q01_my_file2.txt contains
+##Player: Jon
+##ace heart
+##8 leaf
+##Player: Hi
+##konig acorn
+##9 bell
+check.expect("Typical Value Test", hands("a10q01_my_file2.txt"), 
+             {'Jon': [Card("ace", "heart"), Card("8", "leaf")], 
+              'Hi': [Card("konig", "acorn"), Card("9", "bell")]})
+              
+##a10q01_my_file3.txt contains
+##Player: Antonio
+##konig bell
+##6 leaf
+##10 acorn
+##Player: Ashley
+##ace acorn
+##7 bell
+##ober heart
+##Player: Cindy Mac
+##unter acorn
+##ace bell
+##10 heart
+check.expect("Typical Value Test2", hands("a10q01_my_file3.txt"),
+             {"Ashley": [Card("ace", "acorn"),Card("7","bell"),
+              Card("ober", "heart")],
+              "Antonio":[Card("konig", "bell"), Card("6", "leaf"), 
+               Card("10", "acorn")],
+              "Cindy Mac":[Card("unter", "acorn"), Card("ace", "bell"), 
+               Card("10", "heart")]})
+               
+##a10q01_my_file4.txt contains:
+##Player: Jon
+##ace heart
+##6 heart
+##8 leaf
+##Player: Hi
+##konig acorn
+##9 bell
+check.expect("Different amount of cards Test", hands("a10q01_my_file4.txt"),
+              {'Jon': [Card("ace", "heart"), Card("6", "heart"), 
+                       Card("8", "leaf")], 
+               'Hi': [Card("konig", "acorn"),  Card("9", "bell")]})
